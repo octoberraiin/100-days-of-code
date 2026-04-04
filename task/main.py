@@ -1,82 +1,67 @@
 import random
-from art import logo
 
+# TODO-1: - Update the word list to use the 'word_list' from hangman_words.py
+from hangman_words import word_list
+lives = 6
 
-def deal_card():
-    """Returns a random card from the deck"""
-    cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
-    card = random.choice(cards)
-    return card
+# TODO-3: - Import the logo from hangman_art.py and print it at the start of the game.
+from hangman_art import logo
 
+print(logo)
 
-def calculate_score(cards):
-    """Take a list of cards and return the score calculated from the cards"""
-    if sum(cards) == 21 and len(cards) == 2:
-        return 0
+chosen_word = random.choice(word_list)
 
-    if 11 in cards and sum(cards) > 21:
-        cards.remove(11)
-        cards.append(1)
+placeholder = ""
+word_length = len(chosen_word)
+for position in range(word_length):
+    placeholder += "_"
+print("Word to guess: " + placeholder)
 
-    return sum(cards)
+game_over = False
+correct_letters = []
 
+while not game_over:
 
-def compare(u_score, c_score):
-    """Compares the user score u_score against the computer score c_score."""
+    # TODO-6: - Update the code below to tell the user how many lives they have left.
+    print(f"****************************{lives}/6 LIVES LEFT****************************")
+    guess = input("Guess a letter: ").lower()
 
-    if u_score == c_score:
-        return "Draw 🙃"
-    elif c_score == 0:
-        return "Lose, opponent has Blackjack 😱"
-    elif u_score == 0:
-        return "Win with a Blackjack 😎"
-    elif u_score > 21:
-        return "You went over. You lose 😭"
-    elif c_score > 21:
-        return "Opponent went over. You win 😁"
-    elif u_score > c_score:
-        return "You win 😃"
-    else:
-        return "You lose 😤"
+    # TODO-4: - If the user has entered a letter they've already guessed, print the letter and let them know.
 
+    if guess in correct_letters:
+        print(f"You already guessed the letter {guess.upper()}")
 
-def play_game():
-    print(logo)
-    user_cards = []
-    computer_cards = []
-    computer_score = -1
-    user_score = -1
-    is_game_over = False
+    display = ""
 
-    for _ in range(2):
-        user_cards.append(deal_card())
-        computer_cards.append(deal_card())
-
-    while not is_game_over:
-        user_score = calculate_score(user_cards)
-        computer_score = calculate_score(computer_cards)
-        print(f"Your cards: {user_cards}, current score: {user_score}")
-        print(f"Computer's first card: {computer_cards[0]}")
-
-        if user_score == 0 or computer_score == 0 or user_score > 21:
-            is_game_over = True
+    for letter in chosen_word:
+        if letter == guess:
+            display += letter
+            correct_letters.append(guess)
+        elif letter in correct_letters:
+            display += letter
         else:
-            user_should_deal = input("Type 'y' to get another card, type 'n' to pass: ")
-            if user_should_deal == "y":
-                user_cards.append(deal_card())
-            else:
-                is_game_over = True
+            display += "_"
 
-    while computer_score != 0 and computer_score < 17:
-        computer_cards.append(deal_card())
-        computer_score = calculate_score(computer_cards)
+    print("Word to guess: " + display)
 
-    print(f"Your final hand: {user_cards}, final score: {user_score}")
-    print(f"Computer's final hand: {computer_cards}, final score: {computer_score}")
-    print(compare(user_score, computer_score))
+    # TODO-5: - If the letter is not in the chosen_word, print out the letter and let them know it's not in the word.
+    #  e.g. You guessed d, that's not in the word. You lose a life.
 
+    if guess not in chosen_word:
+        lives -= 1
+        print(f"The letter {guess.upper()} is NOT in the word. You lose a life.")
 
-while input("Do you want to play a game of Blackjack? Type 'y' or 'n': ") == "y":
-    print("\n" * 20)
-    play_game()
+        if lives == 0:
+            game_over = True
 
+            # TODO 7: - Update the print statement below to give the user the correct word they were trying to guess.
+            print(f"***********************YOU LOSE**********************")
+            print(f"The word was {chosen_word.upper()}.")
+
+    if "_" not in display:
+        game_over = True
+        print("****************************YOU WIN****************************")
+
+    # TODO-2: - Update the code below to use the stages List from the file hangman_art.py
+    from hangman_art import stages
+    print(stages[lives])
