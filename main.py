@@ -1,82 +1,58 @@
-import random
-from art import logo
+from selenium import webdriver
+from selenium.common import NoSuchElementException, ElementClickInterceptedException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from time import sleep
 
+TINDOG_URL = "https://app.100daysofpython.dev/services/tindog/u/1SZ4Mi1hyx2CvGap6G5bpGsTet1dJ24P"
+FACEBARK_EMAIL = "anything@gmail.com"
+FACEBARK_PASSWORD = "anything"
 
-def deal_card():
-    """Returns a random card from the deck"""
-    cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
-    card = random.choice(cards)
-    return card
+driver = webdriver.Chrome()
+driver.get(TINDOG_URL)
 
+sleep(2)
+login_button = driver.find_element(By.XPATH, value='//*[text()="Log in"]')
+login_button.click()
 
-def calculate_score(cards):
-    """Take a list of cards and return the score calculated from the cards"""
-    if sum(cards) == 21 and len(cards) == 2:
-        return 0
+sleep(1)
+facebark_button = driver.find_element(By.CLASS_NAME, value='btn-facebark')
+facebark_button.click()
 
-    if 11 in cards and sum(cards) > 21:
-        cards.remove(11)
-        cards.append(1)
+sleep(2)
+base_window = driver.window_handles[0]
+fb_login_window = driver.window_handles[1]
+driver.switch_to.window(fb_login_window)
+print(driver.title)
 
-    return sum(cards)
+email = driver.find_element(By.ID, value='email')
+password = driver.find_element(By.ID, value='pass')
+email.send_keys(FACEBARK_EMAIL)
+password.send_keys(FACEBARK_PASSWORD)
+password.send_keys(Keys.ENTER)
 
+sleep(1)
+driver.switch_to.window(base_window)
+print(driver.title)
 
-def compare(u_score, c_score):
-    """Compares the user score u_score against the computer score c_score."""
+sleep(2)
+driver.find_element(By.XPATH, value='//button[text()="Allow"]').click()
+sleep(1)
+driver.find_element(By.XPATH, value='//button[text()="Not interested"]').click()
+sleep(1)
+driver.find_element(By.XPATH, value='//button[text()="I Accept"]').click()
 
-    if u_score == c_score:
-        return "Draw 🙃"
-    elif c_score == 0:
-        return "Lose, opponent has Blackjack 😱"
-    elif u_score == 0:
-        return "Win with a Blackjack 😎"
-    elif u_score > 21:
-        return "You went over. You lose 😭"
-    elif c_score > 21:
-        return "Opponent went over. You win 😁"
-    elif u_score > c_score:
-        return "You win 😃"
-    else:
-        return "You lose 😤"
+for n in range(20):
+    sleep(1)
+    try:
+        like_button = driver.find_element(By.CLASS_NAME, value='btn-like')
+        like_button.click()
+    except ElementClickInterceptedException:
+        try:
+            driver.find_element(By.CSS_SELECTOR, value='.match-popup a').click()
+        except NoSuchElementException:
+            sleep(2)
+    except NoSuchElementException:
+        sleep(2)
 
-
-def play_game():
-    print(logo)
-    user_cards = []
-    computer_cards = []
-    computer_score = -1
-    user_score = -1
-    is_game_over = False
-
-    for _ in range(2):
-        user_cards.append(deal_card())
-        computer_cards.append(deal_card())
-
-    while not is_game_over:
-        user_score = calculate_score(user_cards)
-        computer_score = calculate_score(computer_cards)
-        print(f"Your cards: {user_cards}, current score: {user_score}")
-        print(f"Computer's first card: {computer_cards[0]}")
-
-        if user_score == 0 or computer_score == 0 or user_score > 21:
-            is_game_over = True
-        else:
-            user_should_deal = input("Type 'y' to get another card, type 'n' to pass: ")
-            if user_should_deal == "y":
-                user_cards.append(deal_card())
-            else:
-                is_game_over = True
-
-    while computer_score != 0 and computer_score < 17:
-        computer_cards.append(deal_card())
-        computer_score = calculate_score(computer_cards)
-
-    print(f"Your final hand: {user_cards}, final score: {user_score}")
-    print(f"Computer's final hand: {computer_cards}, final score: {computer_score}")
-    print(compare(user_score, computer_score))
-
-
-while input("Do you want to play a game of Blackjack? Type 'y' or 'n': ") == "y":
-    print("\n" * 20)
-    play_game()
-
+driver.quit()
